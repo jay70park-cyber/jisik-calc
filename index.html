@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>지식산업센터 투자 계산기 | 동탄</title>
+<meta name="description" content="분양가와 대출 조건을 넣으면 실투자금, 월 이자, 임대수익률을 바로 확인할 수 있습니다.">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root{
+    --navy:#1F3C88;
+    --navy-deep:#152a5f;
+    --gold:#C9932F;
+    --brick:#B8451D;
+    --paper:#FBFAF7;
+    --line:#E3E1DA;
+    --ink:#20242E;
+    --muted:#6B7280;
+    --tint:#EEF2FB;
+    --radius:12px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Pretendard','Malgun Gothic',-apple-system,sans-serif;
+    font-size:16px;
+    line-height:1.65;
+    -webkit-text-size-adjust:100%;
+  }
+  .wrap{max-width:900px;margin:0 auto;padding:0 18px 64px;}
+
+  /* ── 헤더 ── */
+  .masthead{
+    background:var(--navy);
+    color:#fff;
+    margin:0 -18px 26px;
+    padding:30px 22px 26px;
+  }
+  .masthead .eyebrow{
+    font-size:12px;letter-spacing:2px;font-weight:700;
+    color:var(--gold);margin-bottom:8px;
+  }
+  .masthead h1{
+    margin:0 0 8px;font-size:26px;line-height:1.32;font-weight:800;letter-spacing:-0.5px;
+  }
+  .masthead p{margin:0;font-size:14.5px;color:#C4D0EA;line-height:1.6;}
+
+  /* ── 탭 ── */
+  .tabs{display:flex;gap:6px;margin-bottom:22px;flex-wrap:wrap;}
+  .tab{
+    flex:1 1 auto;min-width:112px;
+    border:1px solid var(--line);background:#fff;color:var(--muted);
+    border-radius:999px;padding:10px 14px;font-size:14px;font-weight:700;
+    font-family:inherit;cursor:pointer;transition:background .15s,color .15s,border-color .15s;
+  }
+  .tab:hover{border-color:var(--navy);color:var(--navy);}
+  .tab[aria-selected="true"]{background:var(--navy);border-color:var(--navy);color:#fff;}
+  .tab:focus-visible{outline:3px solid var(--gold);outline-offset:2px;}
+
+  .panel[hidden]{display:none;}
+  .grid{display:grid;grid-template-columns:1fr;gap:20px;}
+  @media(min-width:760px){.grid{grid-template-columns:1fr 1fr;align-items:start;}}
+
+  /* ── 입력 ── */
+  .card{
+    background:#fff;border:1px solid var(--line);border-radius:var(--radius);
+    padding:20px;
+  }
+  .card h2{
+    margin:0 0 16px;font-size:15px;font-weight:800;color:var(--navy);
+    letter-spacing:-0.2px;
+  }
+  .field{margin-bottom:15px;}
+  .field:last-child{margin-bottom:0;}
+  .field label{display:block;font-size:13.5px;font-weight:700;margin-bottom:6px;color:#39404f;}
+  .field .hint{font-weight:400;color:var(--muted);font-size:12.5px;}
+  .inputline{display:flex;align-items:stretch;}
+  .inputline input{
+    flex:1;min-width:0;
+    border:1px solid var(--line);border-right:none;
+    border-radius:8px 0 0 8px;padding:11px 12px;
+    font-family:'Pretendard',sans-serif;font-size:16px;font-weight:600;
+    text-align:right;font-variant-numeric:tabular-nums;color:var(--ink);background:#fff;
+  }
+  .inputline input:focus{outline:none;border-color:var(--navy);box-shadow:inset 0 0 0 1px var(--navy);}
+  .inputline .unit{
+    display:flex;align-items:center;padding:0 12px;
+    border:1px solid var(--line);border-radius:0 8px 8px 0;
+    background:#F5F6F8;color:var(--muted);font-size:13.5px;font-weight:600;white-space:nowrap;
+  }
+  .conv{font-size:12.5px;color:var(--navy);margin-top:5px;font-weight:600;min-height:1em;}
+
+  /* ── 견적서(시그니처) ── */
+  .receipt{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:var(--radius) var(--radius) 0 0;
+    padding:22px 20px 18px;
+    position:relative;
+  }
+  .receipt::after{
+    content:"";position:absolute;left:-1px;right:-1px;bottom:-11px;height:12px;
+    background:
+      radial-gradient(circle at 6px 0, transparent 6px, var(--line) 6px, var(--line) 7px, transparent 7px) repeat-x;
+    background-size:14px 12px;
+  }
+  .receipt-tear{
+    height:12px;
+    background:
+      radial-gradient(circle at 6px 0, transparent 6px, var(--paper) 7px) repeat-x;
+    background-size:14px 12px;
+    margin-bottom:20px;
+  }
+  .receipt h2{
+    margin:0 0 4px;font-size:15px;font-weight:800;color:var(--navy);
+  }
+  .receipt .stamp{
+    font-size:11.5px;letter-spacing:1.5px;color:var(--gold);font-weight:800;margin-bottom:16px;
+  }
+  .row{
+    display:flex;justify-content:space-between;align-items:baseline;gap:12px;
+    padding:9px 0;border-bottom:1px dashed var(--line);
+  }
+  .row .k{font-size:14px;color:#454b57;}
+  .row .v{
+    font-size:15.5px;font-weight:700;
+    font-variant-numeric:tabular-nums;
+    white-space:nowrap;
+  }
+  .row.total{
+    border-bottom:none;border-top:2px solid var(--navy);
+    margin-top:12px;padding-top:14px;
+  }
+  .row.total .k{font-size:15px;font-weight:800;color:var(--navy);}
+  .row.total .v{font-size:23px;font-weight:800;color:var(--navy);letter-spacing:-0.5px;}
+  .row.sub .k,.row.sub .v{color:var(--muted);font-size:13.5px;font-weight:600;}
+  .row .v.warn{color:var(--brick);}
+  .flash{animation:flash .5s ease-out;}
+  @keyframes flash{from{background:#FFF6D8;}to{background:transparent;}}
+  @media(prefers-reduced-motion:reduce){.flash{animation:none;}}
+
+  .verdict{
+    margin-top:16px;padding:13px 15px;border-radius:9px;
+    background:var(--tint);font-size:14px;line-height:1.6;color:#28324a;
+  }
+  .verdict b{color:var(--navy);}
+
+  /* ── 판단 기준 ── */
+  .criteria{margin-top:26px;background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:20px;}
+  .criteria h2{margin:0 0 4px;font-size:15px;font-weight:800;color:var(--navy);}
+  .criteria p.lead{margin:0 0 14px;font-size:13.5px;color:var(--muted);}
+  .criteria ol{margin:0;padding-left:0;list-style:none;counter-reset:c;}
+  .criteria li{
+    counter-increment:c;position:relative;padding:10px 0 10px 38px;
+    border-bottom:1px solid var(--line);font-size:14.5px;line-height:1.6;
+  }
+  .criteria li:last-child{border-bottom:none;}
+  .criteria li::before{
+    content:counter(c);position:absolute;left:0;top:11px;
+    width:24px;height:24px;border-radius:50%;
+    background:var(--navy);color:#fff;
+    font-size:12.5px;font-weight:800;
+    display:flex;align-items:center;justify-content:center;
+  }
+
+  /* ── 면책조항 ── */
+  .disclaimer{
+    margin-top:26px;border:1px solid #E5D4A8;background:#FDF9EF;
+    border-radius:var(--radius);padding:18px 20px;
+  }
+  .disclaimer h2{
+    margin:0 0 10px;font-size:13.5px;font-weight:800;color:#8A6A1F;
+    letter-spacing:0.3px;
+  }
+  .disclaimer ul{margin:0;padding-left:17px;}
+  .disclaimer li{font-size:13px;line-height:1.75;color:#5F5230;margin-bottom:5px;}
+  .disclaimer li:last-child{margin-bottom:0;}
+
+  .note{
+    margin-top:14px;font-size:12.5px;color:var(--muted);line-height:1.6;
+  }
+  footer{margin-top:30px;padding-top:18px;border-top:1px solid var(--line);font-size:13px;color:var(--muted);}
+  footer a{color:var(--navy);font-weight:700;text-decoration:none;}
+  footer a:hover{text-decoration:underline;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">동탄 지식산업센터</div>
+    <h1>내 숫자로 계산하는<br>지식산업센터 견적서</h1>
+    <p>분양가와 대출 조건을 넣으면 실제로 들어가는 돈이 항목별로 정리됩니다.</p>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" id="tab-1" aria-selected="true" aria-controls="panel-1">실투자금</button>
+    <button class="tab" role="tab" id="tab-2" aria-selected="false" aria-controls="panel-2">임대수익률</button>
+    <button class="tab" role="tab" id="tab-3" aria-selected="false" aria-controls="panel-3">매수 vs 임차</button>
+  </div>
+
+  <!-- ── 탭1: 실투자금 ── -->
+  <section class="panel" id="panel-1" role="tabpanel" aria-labelledby="tab-1">
+    <div class="grid">
+      <div class="card">
+        <h2>조건 입력</h2>
+        <div class="field">
+          <label for="a-price">분양가 <span class="hint">부가세 별도</span></label>
+          <div class="inputline"><input id="a-price" type="number" inputmode="numeric" value="30000"><span class="unit">만원</span></div>
+          <div class="conv" id="a-price-conv"></div>
+        </div>
+        <div class="field">
+          <label for="a-rate">취득세율 <span class="hint">지방교육세·농특세 포함</span></label>
+          <div class="inputline"><input id="a-rate" type="number" step="0.1" value="4.6"><span class="unit">%</span></div>
+        </div>
+        <div class="field">
+          <label for="a-cut">취득세 감면율 <span class="hint">해당 없으면 0</span></label>
+          <div class="inputline"><input id="a-cut" type="number" step="1" value="0"><span class="unit">%</span></div>
+        </div>
+        <div class="field">
+          <label for="a-ltv">대출 비율(LTV)</label>
+          <div class="inputline"><input id="a-ltv" type="number" step="1" value="40"><span class="unit">%</span></div>
+        </div>
+        <div class="field">
+          <label for="a-int">대출 금리 <span class="hint">연이율</span></label>
+          <div class="inputline"><input id="a-int" type="number" step="0.1" value="5.0"><span class="unit">%</span></div>
+        </div>
+        <div class="field">
+          <label for="a-etc">기타 비용 <span class="hint">중개보수·법무비 등</span></label>
+          <div class="inputline"><input id="a-etc" type="number" value="0"><span class="unit">만원</span></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="receipt">
+          <h2>산출 견적서</h2>
+          <div class="stamp">ESTIMATE</div>
+          <div class="row"><span class="k">분양가</span><span class="v" id="a-o-price">-</span></div>
+          <div class="row"><span class="k">취득세</span><span class="v" id="a-o-tax">-</span></div>
+          <div class="row sub"><span class="k">└ 감면으로 줄어든 금액</span><span class="v" id="a-o-saved">-</span></div>
+          <div class="row"><span class="k">기타 비용</span><span class="v" id="a-o-etc">-</span></div>
+          <div class="row"><span class="k">대출금 <span class="hint">(차감)</span></span><span class="v" id="a-o-loan">-</span></div>
+          <div class="row total"><span class="k">실투자금</span><span class="v" id="a-o-cash">-</span></div>
+          <div class="row"><span class="k">월 이자 부담</span><span class="v warn" id="a-o-month">-</span></div>
+        </div>
+        <div class="receipt-tear"></div>
+        <div class="verdict" id="a-verdict"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 탭2: 임대수익률 ── -->
+  <section class="panel" id="panel-2" role="tabpanel" aria-labelledby="tab-2" hidden>
+    <div class="grid">
+      <div class="card">
+        <h2>조건 입력</h2>
+        <div class="field">
+          <label for="b-price">분양가 <span class="hint">부가세 별도</span></label>
+          <div class="inputline"><input id="b-price" type="number" value="30000"><span class="unit">만원</span></div>
+          <div class="conv" id="b-price-conv"></div>
+        </div>
+        <div class="field">
+          <label for="b-rate">취득세율</label>
+          <div class="inputline"><input id="b-rate" type="number" step="0.1" value="4.6"><span class="unit">%</span></div>
+        </div>
+        <div class="field">
+          <label for="b-ltv">대출 비율(LTV)</label>
+          <div class="inputline"><input id="b-ltv" type="number" value="40"><span class="unit">%</span></div>
+        </div>
+        <div class="field">
+          <label for="b-int">대출 금리</label>
+          <div class="inputline"><input id="b-int" type="number" step="0.1" value="5.0"><span class="unit">%</span></div>
+        </div>
+        <div class="field">
+          <label for="b-dep">임대 보증금</label>
+          <div class="inputline"><input id="b-dep" type="number" value="2000"><span class="unit">만원</span></div>
+        </div>
+        <div class="field">
+          <label for="b-rent">월 임대료</label>
+          <div class="inputline"><input id="b-rent" type="number" step="1" value="150"><span class="unit">만원</span></div>
+        </div>
+        <div class="field">
+          <label for="b-cost">월 자부담 비용 <span class="hint">공실 대비 관리비 등</span></label>
+          <div class="inputline"><input id="b-cost" type="number" step="1" value="0"><span class="unit">만원</span></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="receipt">
+          <h2>수익률 견적서</h2>
+          <div class="stamp">YIELD</div>
+          <div class="row"><span class="k">실투자금 <span class="hint">(보증금 차감 후)</span></span><span class="v" id="b-o-cash">-</span></div>
+          <div class="row"><span class="k">연 임대수입</span><span class="v" id="b-o-income">-</span></div>
+          <div class="row"><span class="k">연 대출이자</span><span class="v warn" id="b-o-interest">-</span></div>
+          <div class="row"><span class="k">연 순수익</span><span class="v" id="b-o-net">-</span></div>
+          <div class="row total"><span class="k">실투자금 대비 수익률</span><span class="v" id="b-o-yield">-</span></div>
+          <div class="row sub"><span class="k">참고: 대출 없이 전액 자기자본일 때</span><span class="v" id="b-o-yield0">-</span></div>
+        </div>
+        <div class="receipt-tear"></div>
+        <div class="verdict" id="b-verdict"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 탭3: 매수 vs 임차 ── -->
+  <section class="panel" id="panel-3" role="tabpanel" aria-labelledby="tab-3" hidden>
+    <div class="grid">
+      <div class="card">
+        <h2>조건 입력</h2>
+        <div class="field">
+          <label for="c-price">분양가 <span class="hint">매수 검토 대상</span></label>
+          <div class="inputline"><input id="c-price" type="number" value="30000"><span class="unit">만원</span></div>
+          <div class="conv" id="c-price-conv"></div>
+        </div>
+        <div class="field">
+          <label for="c-rate">취득세율</label>
+          <div class="inputline"><input id="c-rate" type="number" step="0.1" value="4.6"><span class="unit">%</span></div>
+        </div>
+        <div class="field">
+          <label for="c-ltv">대출 비율(LTV)</label>
+          <div class="inputline"><input id="c-ltv" type="number" value="40"><span class="unit">%</span></div>
+        </div>
+        <div class="field">
+          <label for="c-int">대출 금리</label>
+          <div class="inputline"><input id="c-int" type="number" step="0.1" value="5.0"><span class="unit">%</span></div>
+        </div>
+        <div class="field">
+          <label for="c-opp">자기자본 기회비용 <span class="hint">예금·투자로 얻을 수익률</span></label>
+          <div class="inputline"><input id="c-opp" type="number" step="0.1" value="3.0"><span class="unit">%</span></div>
+        </div>
+        <div class="field">
+          <label for="c-rdep">임차 시 보증금</label>
+          <div class="inputline"><input id="c-rdep" type="number" value="2000"><span class="unit">만원</span></div>
+        </div>
+        <div class="field">
+          <label for="c-rent">임차 시 월 임대료</label>
+          <div class="inputline"><input id="c-rent" type="number" step="1" value="150"><span class="unit">만원</span></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="receipt">
+          <h2>5년 비용 비교</h2>
+          <div class="stamp">BUY vs RENT</div>
+          <div class="row"><span class="k">[매수] 취득세</span><span class="v" id="c-o-tax">-</span></div>
+          <div class="row"><span class="k">[매수] 5년 대출이자</span><span class="v" id="c-o-int">-</span></div>
+          <div class="row"><span class="k">[매수] 5년 자기자본 기회비용</span><span class="v" id="c-o-opp">-</span></div>
+          <div class="row total"><span class="k">매수 5년 비용</span><span class="v" id="c-o-buy">-</span></div>
+          <div class="row"><span class="k">[임차] 5년 임대료</span><span class="v" id="c-o-rentsum">-</span></div>
+          <div class="row"><span class="k">[임차] 5년 보증금 기회비용</span><span class="v" id="c-o-depopp">-</span></div>
+          <div class="row total"><span class="k">임차 5년 비용</span><span class="v" id="c-o-rentcost">-</span></div>
+        </div>
+        <div class="receipt-tear"></div>
+        <div class="verdict" id="c-verdict"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 판단 기준 3가지 ── -->
+  <section class="criteria">
+    <h2>계산 결과를 보기 전에, 판단 기준 3가지</h2>
+    <p class="lead">숫자가 좋아 보여도 아래 세 가지가 정리되지 않으면 결론을 내리기 이릅니다.</p>
+    <ol>
+      <li><b>용도가 분명한가.</b> 직접 쓸 것인지 임대할 것인지에 따라 적용되는 세율과 감면 여부가 달라집니다. 계산에 넣은 세율이 내 용도에 맞는 값인지 먼저 확인하세요.</li>
+      <li><b>보유 기간을 감당할 수 있는가.</b> 감면을 받는 경우 일정 기간 안에 팔거나 용도를 바꾸면 세금이 추징될 수 있습니다. 그 기간을 버틸 계획인지 따져보세요.</li>
+      <li><b>대출 조건을 서면으로 확인했는가.</b> 대출 비율과 금리는 은행·시점·업종에 따라 크게 달라집니다. 계산에 넣은 조건을 실제 취급 은행에서 확인했는지가 핵심입니다.</li>
+    </ol>
+  </section>
+
+  <!-- ── 면책조항 ── -->
+  <section class="disclaimer">
+    <h2>면책조항</h2>
+    <ul>
+      <li>이 계산기는 이용자가 입력한 값에 단순 산식을 적용해 보여주는 <b>참고용 도구</b>입니다. 특정 물건의 매수·임차·투자를 권유하거나 그 결과를 보장하지 않습니다.</li>
+      <li>취득세율·감면 요건·대출 한도와 금리는 물건, 취득 시점, 업종, 개인·법인 여부, 금융기관 정책에 따라 달라집니다. 실제 적용되는 값과 차이가 날 수 있습니다.</li>
+      <li>부가가치세, 재산세 등 보유세, 중개보수, 관리비, 공실 기간, 임대료 변동, 자산가치 변동은 계산에 포함되어 있지 않거나 단순화되어 있습니다.</li>
+      <li>세무·법률·금융에 관한 판단은 세무사, 변호사, 금융기관 등 해당 분야 전문가의 확인을 받으시기 바랍니다.</li>
+      <li>이 계산기의 결과를 근거로 한 의사결정과 그로 인해 발생한 손해에 대해 운영자는 책임을 지지 않습니다.</li>
+      <li>법령과 정책은 수시로 바뀝니다. 반드시 국가법령정보센터, 국세청, 관할 지자체 등 <b>공식 출처에서 최신 내용을 확인</b>하시기 바랍니다.</li>
+    </ul>
+  </section>
+
+  <p class="note">모든 금액은 만원 단위로 입력하고, 결과는 읽기 쉽도록 반올림해 표시합니다.</p>
+
+  <footer>
+    동탄 지식산업센터 정보 블로그에서 운영하는 계산기입니다.
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var W = 10000; // 만원 → 원
+
+  function num(id){
+    var el = document.getElementById(id);
+    var v = parseFloat(el && el.value);
+    return isFinite(v) ? v : 0;
+  }
+
+  // 만원 단위 값을 사람이 읽기 좋은 문자열로
+  // toLocaleString 은 환경에 따라 천 단위 구분이 빠질 수 있어 직접 처리한다
+  function comma(n){
+    var s = String(Math.round(n));
+    var out = "", cnt = 0;
+    for(var i = s.length - 1; i >= 0; i--){
+      out = s.charAt(i) + out;
+      cnt++;
+      if(cnt % 3 === 0 && i > 0) out = "," + out;
+    }
+    return out;
+  }
+
+  function won(manwon){
+    if(!isFinite(manwon)) return "-";
+    var neg = manwon < 0;
+    var m = Math.round(Math.abs(manwon));
+    var out;
+    if(m >= 10000){
+      var eok = Math.floor(m / 10000);
+      var rest = m % 10000;
+      out = comma(eok) + "억" + (rest ? " " + comma(rest) + "만" : "");
+    } else {
+      out = comma(m) + "만";
+    }
+    return (neg ? "-" : "") + out + "원";
+  }
+
+  function pct(v){
+    return isFinite(v) ? v.toFixed(2) + "%" : "-";
+  }
+
+  function setText(id, text){
+    var el = document.getElementById(id);
+    if(!el) return;
+    if(el.textContent !== text){
+      el.textContent = text;
+      el.classList.remove("flash");
+      void el.offsetWidth;
+      el.classList.add("flash");
+    }
+  }
+
+  function conv(inputId, convId){
+    var v = num(inputId);
+    var el = document.getElementById(convId);
+    if(el) el.textContent = v ? "= " + won(v) : "";
+  }
+
+  // ── 탭1: 실투자금 ──
+  function calcA(){
+    var price = num("a-price");
+    var rate = num("a-rate") / 100;
+    var cut = num("a-cut") / 100;
+    var ltv = num("a-ltv") / 100;
+    var intr = num("a-int") / 100;
+    var etc = num("a-etc");
+
+    var taxFull = price * rate;
+    var tax = taxFull * (1 - cut);
+    var saved = taxFull - tax;
+    var loan = price * ltv;
+    var cash = price - loan + tax + etc;
+    var month = loan * intr / 12;
+
+    conv("a-price", "a-price-conv");
+    setText("a-o-price", won(price));
+    setText("a-o-tax", won(tax));
+    setText("a-o-saved", saved > 0 ? "-" + won(saved) : won(0));
+    setText("a-o-etc", won(etc));
+    setText("a-o-loan", "-" + won(loan));
+    setText("a-o-cash", won(cash));
+    setText("a-o-month", won(month));
+
+    var ratio = price ? (cash / price * 100) : 0;
+    document.getElementById("a-verdict").innerHTML =
+      "분양가의 <b>" + ratio.toFixed(0) + "%</b>를 자기 돈으로 넣게 됩니다. " +
+      "대출 조건이 바뀌면 이 비율이 가장 크게 흔들리니, LTV 값을 바꿔가며 비교해 보세요.";
+  }
+
+  // ── 탭2: 임대수익률 ──
+  function calcB(){
+    var price = num("b-price");
+    var rate = num("b-rate") / 100;
+    var ltv = num("b-ltv") / 100;
+    var intr = num("b-int") / 100;
+    var dep = num("b-dep");
+    var rent = num("b-rent");
+    var cost = num("b-cost");
+
+    var tax = price * rate;
+    var loan = price * ltv;
+    var cash = price - loan + tax - dep;
+    var income = (rent - cost) * 12;
+    var interest = loan * intr;
+    var net = income - interest;
+    var y = cash > 0 ? (net / cash * 100) : NaN;
+
+    var cash0 = price + tax - dep;
+    var y0 = cash0 > 0 ? (income / cash0 * 100) : NaN;
+
+    conv("b-price", "b-price-conv");
+    setText("b-o-cash", won(cash));
+    setText("b-o-income", won(income));
+    setText("b-o-interest", "-" + won(interest));
+    setText("b-o-net", won(net));
+    setText("b-o-yield", pct(y));
+    setText("b-o-yield0", pct(y0));
+
+    var msg;
+    if(!isFinite(y)){
+      msg = "보증금이 실투자금보다 커서 수익률을 계산할 수 없습니다. 입력값을 확인해 주세요.";
+    } else if(net < 0){
+      msg = "현재 조건에서는 <b>임대수입이 이자를 못 넘습니다.</b> 매달 돈이 나가는 구조라는 뜻입니다.";
+    } else {
+      msg = "대출을 쓰면 수익률은 <b>" + pct(y) + "</b>, 안 쓰면 <b>" + pct(y0) + "</b>입니다. " +
+            "차이가 클수록 금리 변동에 크게 흔들린다는 뜻입니다.";
+    }
+    document.getElementById("b-verdict").innerHTML = msg;
+  }
+
+  // ── 탭3: 매수 vs 임차 ──
+  function calcC(){
+    var price = num("c-price");
+    var rate = num("c-rate") / 100;
+    var ltv = num("c-ltv") / 100;
+    var intr = num("c-int") / 100;
+    var opp = num("c-opp") / 100;
+    var rdep = num("c-rdep");
+    var rent = num("c-rent");
+
+    var tax = price * rate;
+    var loan = price * ltv;
+    var cash = price - loan + tax;
+    var int5 = loan * intr * 5;
+    var opp5 = cash * opp * 5;
+    var buy = tax + int5 + opp5;
+
+    var rentSum = rent * 12 * 5;
+    var depOpp = rdep * opp * 5;
+    var rentCost = rentSum + depOpp;
+
+    conv("c-price", "c-price-conv");
+    setText("c-o-tax", won(tax));
+    setText("c-o-int", won(int5));
+    setText("c-o-opp", won(opp5));
+    setText("c-o-buy", won(buy));
+    setText("c-o-rentsum", won(rentSum));
+    setText("c-o-depopp", won(depOpp));
+    setText("c-o-rentcost", won(rentCost));
+
+    var diff = rentCost - buy;
+    var msg;
+    if(diff > 0){
+      msg = "5년 기준으로 매수가 <b>" + won(diff) + "</b> 적게 듭니다. ";
+    } else if(diff < 0){
+      msg = "5년 기준으로 임차가 <b>" + won(-diff) + "</b> 적게 듭니다. ";
+    } else {
+      msg = "5년 비용이 거의 같습니다. ";
+    }
+    msg += "다만 매수는 5년 뒤 <b>자산이 남고</b> 그 가치는 오르내릴 수 있습니다. 이 계산에는 자산가치 변동과 보유세가 빠져 있습니다.";
+    document.getElementById("c-verdict").innerHTML = msg;
+  }
+
+  function calcAll(){ calcA(); calcB(); calcC(); }
+
+  document.addEventListener("input", function(e){
+    if(e.target && e.target.tagName === "INPUT") calcAll();
+  });
+
+  // 탭 전환
+  var tabs = [].slice.call(document.querySelectorAll(".tab"));
+  tabs.forEach(function(t){
+    t.addEventListener("click", function(){
+      tabs.forEach(function(o){
+        var sel = (o === t);
+        o.setAttribute("aria-selected", sel ? "true" : "false");
+        document.getElementById(o.getAttribute("aria-controls")).hidden = !sel;
+      });
+    });
+  });
+
+  calcAll();
+})();
+</script>
+</body>
+</html>
