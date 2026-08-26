@@ -200,6 +200,7 @@
     <button class="tab" role="tab" id="tab-1" aria-selected="true" aria-controls="panel-1">실투자금</button>
     <button class="tab" role="tab" id="tab-2" aria-selected="false" aria-controls="panel-2">임대수익률</button>
     <button class="tab" role="tab" id="tab-3" aria-selected="false" aria-controls="panel-3">매수 vs 임차</button>
+    <button class="tab" role="tab" id="tab-4" aria-selected="false" aria-controls="panel-4">입주 가능 업종</button>
   </div>
 
   <!-- ── 탭1: 실투자금 ── -->
@@ -358,7 +359,57 @@
       </div>
     </div>
   </section>
+  
+  <!-- ── 탭4: 입주 가능 업종 ── -->
+  <section class="panel" id="panel-4" role="tabpanel" aria-labelledby="tab-4" hidden>
+    <div class="grid">
+      <div class="card">
+        <h2>업종 선택</h2>
+        <div class="field">
+          <label for="d-cat">업종 대분류</label>
+          <div class="inputline">
+            <select id="d-cat" style="flex:1;min-width:0;border:1px solid var(--line);border-radius:8px;padding:11px 12px;font-family:inherit;font-size:15px;font-weight:600;color:var(--ink);background:#fff;">
+              <option>제조업</option>
+              <option>지식산업</option>
+              <option>정보통신산업</option>
+              <option>지원시설 업종</option>
+              <option>그 밖의 업종</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="d-sub">세부 업종</label>
+          <div class="inputline">
+            <select id="d-sub" style="flex:1;min-width:0;border:1px solid var(--line);border-radius:8px;padding:11px 12px;font-family:inherit;font-size:15px;font-weight:600;color:var(--ink);background:#fff;"></select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="d-use">이용 형태 <span class="hint">직접 입주 / 임대 목적</span></label>
+          <div class="inputline">
+            <select id="d-use" style="flex:1;min-width:0;border:1px solid var(--line);border-radius:8px;padding:11px 12px;font-family:inherit;font-size:15px;font-weight:600;color:var(--ink);background:#fff;">
+              <option>직접 입주해서 사용</option>
+              <option>임대 놓을 목적</option>
+            </select>
+          </div>
+        </div>
+      </div>
 
+      <div>
+        <div class="receipt">
+          <h2>입주 자격 판정서</h2>
+          <div class="stamp">ELIGIBILITY</div>
+          <div class="row"><span class="k">선택 업종</span><span class="v" id="d-o-job">-</span></div>
+          <div class="row"><span class="k">근거 조항</span><span class="v" id="d-o-law" style="font-size:13px;">-</span></div>
+          <div class="row"><span class="k">입주 가능 구역</span><span class="v" id="d-o-zone" style="font-size:13px;">-</span></div>
+          <div class="row"><span class="k">이용 형태</span><span class="v" id="d-o-use" style="font-size:13px;">-</span></div>
+          <div class="row total"><span class="k">판정</span><span class="v" id="d-o-verdict">-</span></div>
+        </div>
+        <div class="receipt-tear"></div>
+        <div class="verdict" id="d-verdict"></div>
+      </div>
+    </div>
+  </section>
+  
   <!-- ── 판단 기준 3가지 ── -->
   <section class="criteria">
     <h2>계산 결과를 보기 전에, 판단 기준 3가지</h2>
@@ -565,13 +616,104 @@
     msg += "다만 매수는 5년 뒤 <b>자산이 남고</b> 그 가치는 오르내릴 수 있습니다. 이 계산에는 자산가치 변동과 보유세가 빠져 있습니다.";
     document.getElementById("c-verdict").innerHTML = msg;
   }
+  // ── 탭4: 입주 가능 업종 ──
+  var JOBS = {
+    "제조업": {
+      law: "산업집적법 제28조의5 ①-1",
+      zone: "지식산업센터 전 층",
+      verdict: "입주 가능",
+      list: ["전자부품·컴퓨터·통신장비", "기계·장비", "의료·정밀·광학기기",
+             "화학제품", "금속가공제품", "식료품", "그 밖의 제조업"]
+    },
+    "지식산업": {
+      law: "산업집적법 제28조의5 ①-2",
+      zone: "지식산업센터 전 층",
+      verdict: "입주 가능",
+      list: ["연구개발업", "건축기술·엔지니어링", "전문디자인업",
+             "광고물 작성업", "영상·오디오물 제작", "경영컨설팅업"]
+    },
+    "정보통신산업": {
+      law: "산업집적법 제28조의5 ①-3",
+      zone: "지식산업센터 전 층",
+      verdict: "입주 가능",
+      list: ["소프트웨어 개발·공급", "컴퓨터 프로그래밍·시스템통합",
+             "자료처리·호스팅·포털", "정보서비스업", "통신업"]
+    },
+    "지원시설 업종": {
+      law: "산업집적법 시행령 제36조의4",
+      zone: "지원시설 구역에 한함",
+      verdict: "조건부 가능",
+      list: ["금융·보험", "의원·약국", "학원·교육", "음식점·카페",
+             "소매점", "어린이집", "체력단련장"]
+    },
+    "그 밖의 업종": {
+      law: "해당 없음",
+      zone: "입주 대상 아님",
+      verdict: "입주 불가",
+      list: ["일반 도소매업", "부동산 임대·중개업", "숙박업",
+             "단순 보관 창고업", "운수업", "유흥·위락시설"]
+    }
+  };
 
-  function calcAll(){ calcA(); calcB(); calcC(); }
+  function fillSub(){
+    var cat = document.getElementById("d-cat").value;
+    var sel = document.getElementById("d-sub");
+    var list = (JOBS[cat] || {}).list || [];
+    sel.innerHTML = "";
+    list.forEach(function(name){
+      var o = document.createElement("option");
+      o.textContent = name;
+      sel.appendChild(o);
+    });
+  }
+
+  function calcD(){
+    var cat = document.getElementById("d-cat").value;
+    var sub = document.getElementById("d-sub").value;
+    var use = document.getElementById("d-use").value;
+    var info = JOBS[cat];
+    if(!info) return;
+
+    setText("d-o-job", sub || cat);
+    setText("d-o-law", info.law);
+    setText("d-o-zone", info.zone);
+    setText("d-o-use", use);
+    setText("d-o-verdict", info.verdict);
+
+    var vEl = document.getElementById("d-o-verdict");
+    vEl.classList.toggle("warn", info.verdict !== "입주 가능");
+
+    var msg;
+    if(info.verdict === "입주 가능"){
+      msg = "법령상 입주 가능한 업종입니다. 다만 <b>건물마다 관리규약이 따로 있습니다.</b> " +
+            "계약 전 관리사무소에 " +
+            "\"우리 사업자등록증상 업종으로 입주 가능한지 서면으로 확인해 달라\"고 요청하세요.";
+    } else if(info.verdict === "조건부 가능"){
+      msg = "지원시설 구역에만 들어갈 수 있는 업종입니다. " +
+            "<b>같은 건물이라도 층과 호실에 따라 달라집니다.</b> " +
+            "보고 계신 호실이 지원시설로 지정된 구역인지 건축물대장에서 확인하세요.";
+    } else {
+      msg = "지식산업센터 입주 대상 업종이 아닙니다. " +
+            "<b>사업자등록증상 주업종</b>을 기준으로 판단하니, " +
+            "부업종에 입주 가능 업종이 있어도 인정되지 않는 경우가 많습니다.";
+    }
+    if(use === "임대 놓을 목적"){
+      msg += " 임대 목적 취득은 취득세 감면 대상에서 제외되거나 추징될 수 있으니 별도로 확인하세요.";
+    }
+    document.getElementById("d-verdict").innerHTML = msg;
+  }
+  
+  function calcAll(){ calcA(); calcB(); calcC(); calcD(); }
 
   document.addEventListener("input", function(e){
     if(e.target && e.target.tagName === "INPUT") calcAll();
   });
 
+  document.addEventListener("change", function(e){
+    if(e.target && e.target.id === "d-cat"){ fillSub(); }
+    if(e.target && e.target.tagName === "SELECT") calcD();
+  });
+  
   // 탭 전환
   var tabs = [].slice.call(document.querySelectorAll(".tab"));
   tabs.forEach(function(t){
@@ -583,7 +725,7 @@
       });
     });
   });
-
+  fillSub();
   calcAll();
 })();
 </script>
