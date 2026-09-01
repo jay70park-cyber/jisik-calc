@@ -767,11 +767,11 @@
   var EDU_RATE = 0.20;
 
   function calcE(){
-    var price = num("e-price");
+    var price = num("e-price") * W;
     var kind = document.getElementById("e-kind").value;
     var rate = num("e-rate") / 100;
     var relief = num("e-relief") / 100;
-    var pub = num("e-pubprice");
+    var pub = num("e-pubprice") * W;
     var prelief = num("e-prelief") / 100;
 
     // 감면은 최초 분양 + 직접 사용일 때만 적용된다
