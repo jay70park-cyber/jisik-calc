@@ -503,10 +503,9 @@
 
   var W = 10000; // 만원 → 원
 
-  function num(id){
-    var el = document.getElementById(id);
-    var v = parseFloat(el && el.value);
-    return isFinite(v) ? v : 0;
+    function num(id){
+    var v = document.getElementById(id).value;
+    return parseFloat(String(v).replace(/,/g, "")) || 0;
   }
 
   // 만원 단위 값을 사람이 읽기 좋은 문자열로
