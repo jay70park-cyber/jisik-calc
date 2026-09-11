@@ -847,5 +847,25 @@
   calcAll();
 })();
 </script>
+<script>
+// 주소에 ?tab=이름 이 붙어 있으면 그 탭을 열어준다.
+// 예: ...github.io/jisik-calc/?tab=매수 vs 임차
+(function () {
+  var want = new URLSearchParams(location.search).get('tab');
+  if (!want) return;
+  var norm = function (s) { return (s || '').replace(/\s+/g, '').toLowerCase(); };
+  var target = norm(want);
+
+  // 탭 역할을 하는 요소를 폭넓게 찾는다
+  var nodes = document.querySelectorAll('button, a, li, [role="tab"], .tab');
+  for (var i = 0; i < nodes.length; i++) {
+    if (norm(nodes[i].textContent).indexOf(target) !== -1) {
+      nodes[i].click();
+      nodes[i].scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+  }
+})();
+</script>
 </body>
 </html>
